@@ -1,56 +1,42 @@
-version: 2.1
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
-orbs:
-  node: circleci/node@4.7
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    docker:
-      - image: cimg/node:16.10
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
-      - checkout
-      - node/install-packages:
-          # If you are using yarn, change the line below from "npm" to "yarn"
-          pkg-manager: npm
-      - run:
-          name: Build
-          command: npm run build
-      # - run:
-      #     name: Run eslint
-      #     command: yarn lint
-      # - run:
-      #     name: Run test 
-      #     command: npm run test
-      # - run:
-      #     name: Create gh-pages
-      #     command: |
-      #       git subtree split --prefix dist -b gh-pages
-      #       git push -f https://${GIT_TOKEN}@github.com/TomSG03/ahj-env2.git gh-pages:gh-pages
-
-      #       git config --global credential.helper store
-      #       git config --global user.name CircleCI
-      #       git config --global user.email ci@circleci.com
-      #       git checkout -b gh-pages
-      #       git rm *.*
-      #       git add dist -f
-      #       git commit -m "dist commit"
-      #       git push -f https://${GIT_TOKEN}@github.com/TomSG03/ahj-env2.git gh-pages
-      # # - run:
-      #     name: echo
-      #     command: echo "https://$GIT_TOKEN:x-oauth-basic@github.com" > "$HOME/.git-credentials"
-      # - run:
-      #     name: push-dir
-      #     command: yarn deploy
-      # - run: git add dist -f
-      # - run: git commit -m "Initial dist subtree commit"  
-      # - run: git subtree push --prefix dist https://${GIT_TOKEN}@github.com/TomSG03/ahj-env2.git gh-pages
-      # - run: git subtree push --prefix dist origin gh-pages 
-      
-workflows:
-  sample:
-    jobs:
-      - build-and-test:
-          filters:
-            branches:
-              only: main
-
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
